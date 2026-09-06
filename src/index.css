@@ -1,0 +1,36 @@
+:root {
+  --navy-950: #071525;
+  --navy-900: #0b1f38;
+  --navy-800: #123254;
+  --navy-700: #1c4a70;
+  --ink: #10243b;
+  --muted: #68798d;
+  --line: #d8e1e9;
+  --paper: #fffdf9;
+  --paper-blue: #f5f9fc;
+  --sky: #d9edf5;
+  --teal: #2d8b8b;
+  --shadow: 0 20px 50px rgba(3, 19, 38, 0.16);
+  --font-body: "Avenir Next", "Gill Sans", sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+
+  font: 16px/1.5 var(--font-body);
+  color: var(--ink);
+  background: var(--navy-950);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+#root {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: 100svh;
+}

@@ -1,0 +1,77 @@
+/* HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  font-family: var(--font-display);
+
+  margin-bottom: 34px;
+  color: rgb(249, 249, 249);
+}
+
+.eyebrow,
+.section-eyebrow {
+  margin: 0 0 8px;
+
+  color: #73d0ce;
+
+  font-size: 1.75rem;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.page-header h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4.2rem);
+  font-weight: 400;
+
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.page-subtitle {
+  max-width: 620px;
+
+  margin: 14px 0 0;
+
+  color: #c9d7e4;
+
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.client-counter {
+  min-width: 130px;
+
+  padding: 16px 20px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  text-align: center;
+}
+
+.client-counter span {
+  display: block;
+
+  color: #ffffff;
+
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.client-counter small {
+  color: #9eb3c6;
+}
+
+/* HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ HEADER STYLEZ */
