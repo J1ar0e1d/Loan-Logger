@@ -6,8 +6,7 @@ export const initialForm = {
   name: "",
   loanAmount: "",
   interestRate: "",
-  paymentFrequency: "monthly",
-  compoundingFrequency: "monthly",
+  paymentFrequency: "weekly",
   startDate: "",
   endDate: "",
   numberOfPayments: "",
@@ -21,20 +20,18 @@ const paymentIntervals = {
   yearly: { days: 0, months: 12 },
 };
 
-const compoundingPeriods = {
-  weekly: 52,
-  biweekly: 26,
-  monthly: 12,
-  quarterly: 4,
-  yearly: 1,
-};
-
 const ClientsContext = createContext(null);
 
 const readClients = () => {
   try {
     const savedClients = localStorage.getItem(CLIENTS_STORAGE_KEY);
-    return savedClients ? JSON.parse(savedClients) : [];
+    const clients = savedClients ? JSON.parse(savedClients) : [];
+    return clients
+      .filter((client) => client.status !== "liquidated")
+      .map((client) => ({
+        ...client,
+        calculatedLoan: calculateLoan(client),
+      }));
   } catch {
     return [];
   }
@@ -73,24 +70,20 @@ const getNumberOfPayments = (loan) => {
 
 export const calculateLoan = (loan) => {
   const principal = Number(loan.loanAmount) || 0;
-  const annualRate = Number(loan.interestRate) / 100 || 0;
-  const numberOfPayments = getNumberOfPayments(loan);
-  const compoundsPerYear = compoundingPeriods[loan.compoundingFrequency] || 12;
-  const paymentPeriodsPerYear = compoundingPeriods[loan.paymentFrequency] || 12;
-  const periodicRate = annualRate / compoundsPerYear;
-  const totalPeriods =
-    numberOfPayments * (compoundsPerYear / paymentPeriodsPerYear);
-  const totalAmount =
-    periodicRate > 0
-      ? principal * Math.pow(1 + periodicRate, totalPeriods)
-      : principal;
+  const interestRate = Number(loan.interestRate) / 100 || 0;
+  const numberOfPayments =
+    Number(loan.numberOfPayments) > 0
+      ? Number(loan.numberOfPayments)
+      : getNumberOfPayments(loan);
+  const totalInterest = principal * interestRate;
+  const totalAmount = principal + totalInterest;
   const payment = totalAmount / numberOfPayments;
 
   return {
     payment,
     numberOfPayments,
     totalPaid: payment * numberOfPayments,
-    totalInterest: totalAmount - principal,
+    totalInterest,
     totalAmount,
   };
 };
@@ -125,35 +118,66 @@ export function ClientsProvider({ children }) {
       numberOfPayments: calculatedLoan.numberOfPayments,
       calculatedLoan,
       payments: [],
+      status: "active",
     };
 
     setClients((previous) => [...previous, newClient]);
     setLoanForm(initialForm);
   };
 
+  const liquidateClient = (clientId) => {
+    setClients((previous) =>
+      previous.filter((client) => {
+        if (client.id !== clientId || client.status === "liquidated") {
+          return true;
+        }
+
+        const loanTotal = Number(client.calculatedLoan?.totalAmount) || 0;
+        const paidSoFar = (client.payments || []).reduce(
+          (total, payment) => total + (Number(payment.amount) || 0),
+          0,
+        );
+
+        return Math.round(paidSoFar * 100) < Math.round(loanTotal * 100);
+      }),
+    );
+  };
+
   const applyPayment = (clientId, amount) => {
-    const paymentAmount = Number(amount) || 0;
-    if (paymentAmount <= 0) return;
+    if (amount === "" || amount === null || amount === undefined) return false;
+
+    const paymentAmount = Number(amount);
+    if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) return false;
+
+    const client = clients.find((item) => item.id === clientId);
+    if (!client || client.status === "liquidated") return false;
+
+    const loanTotal = Number(client.calculatedLoan?.totalAmount) || 0;
+    const paidSoFar = (client.payments || []).reduce(
+      (total, payment) => total + (Number(payment.amount) || 0),
+      0,
+    );
+    const remainingBalance = Math.max(0, loanTotal - paidSoFar);
+    const remainingCents = Math.round(remainingBalance * 100);
+    const paymentCents = Math.round(paymentAmount * 100);
+    if (paymentCents > remainingCents) return false;
 
     setClients((previous) =>
       previous.map((client) => {
         if (client.id !== clientId) return client;
+        if (client.status === "liquidated") return client;
 
-        const currentPrincipal = Number(client.loanAmount) || 0;
-        const appliedAmount = Math.min(currentPrincipal, paymentAmount);
+        const loanTotal = Number(client.calculatedLoan?.totalAmount) || 0;
+        const paidSoFar = (client.payments || []).reduce(
+          (total, payment) => total + (Number(payment.amount) || 0),
+          0,
+        );
+        const remainingBalance = Math.max(0, loanTotal - paidSoFar);
+        const appliedAmount = Math.min(remainingBalance, paymentAmount);
         if (appliedAmount <= 0) return client;
-
-        const updatedPrincipal = currentPrincipal - appliedAmount;
-        const updatedLoan = calculateLoan({
-          ...client,
-          loanAmount: updatedPrincipal,
-        });
 
         return {
           ...client,
-          loanAmount: String(updatedPrincipal),
-          numberOfPayments: updatedLoan.numberOfPayments,
-          calculatedLoan: updatedLoan,
           payments: [
             ...(client.payments || []),
             {
@@ -165,6 +189,7 @@ export function ClientsProvider({ children }) {
         };
       }),
     );
+    return true;
   };
 
   return (
@@ -176,6 +201,7 @@ export function ClientsProvider({ children }) {
         addClient,
         updateLoanForm,
         applyPayment,
+        liquidateClient,
       }}
     >
       {children}

@@ -1,18 +1,25 @@
-export default function ClientsForm({ form, paymentCount, onSubmit, onChange }) {
+export default function ClientsForm({
+  form,
+  paymentCount,
+  onSubmit,
+  onChange,
+}) {
   return (
     <form className="client-form" onSubmit={onSubmit}>
       <div className="form-header">
         <div>
           <span className="form-icon">＋</span>
           <div>
-            <h2>New Client</h2>
-            <p>Enter the client's loan information below.</p>
+            <h2>Nuevo Cliente</h2>
+            <p>
+              Introduce la información del préstamo del cliente a continuación.
+            </p>
           </div>
         </div>
       </div>
       <div className="form-grid">
         <div className="form-field">
-          <label htmlFor="name">Client Name</label>
+          <label htmlFor="name">Nombre del Cliente</label>
           <input
             type="text"
             id="name"
@@ -24,7 +31,7 @@ export default function ClientsForm({ form, paymentCount, onSubmit, onChange }) 
         </div>
 
         <div className="form-field">
-          <label htmlFor="loanAmount">Loan Amount</label>
+          <label htmlFor="loanAmount">Monto del Préstamo</label>
           <input
             type="number"
             id="loanAmount"
@@ -38,13 +45,13 @@ export default function ClientsForm({ form, paymentCount, onSubmit, onChange }) 
         </div>
 
         <div className="form-field">
-          <label htmlFor="interestRate">Annual Interest Rate (%)</label>
+          <label htmlFor="interestRate">Tasa de Interés Fija (%)</label>
           <input
             type="number"
             id="interestRate"
             value={form.interestRate}
             onChange={onChange}
-            placeholder="8.5"
+            placeholder="30"
             min="0"
             step="0.01"
             required
@@ -52,71 +59,57 @@ export default function ClientsForm({ form, paymentCount, onSubmit, onChange }) 
         </div>
 
         <div className="form-field">
-          <label htmlFor="paymentFrequency">Payment Frequency</label>
+          <label htmlFor="paymentFrequency">Frecuencia de Pagos</label>
           <select
             id="paymentFrequency"
             value={form.paymentFrequency}
             onChange={onChange}
           >
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Every two weeks</option>
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="yearly">Yearly</option>
+            <option value="weekly">Semanal</option>
+            <option value="biweekly">Cada dos semanas</option>
+            <option value="monthly">Mensual</option>
+            <option value="quarterly">Trimestral</option>
+            <option value="yearly">Anual</option>
           </select>
         </div>
 
         <div className="form-field">
-          <label htmlFor="compoundingFrequency">Compounding Frequency</label>
-          <select
-            id="compoundingFrequency"
-            value={form.compoundingFrequency}
-            onChange={onChange}
-          >
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Every two weeks</option>
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-        </div>
-
-        <div className="form-field">
-          <label htmlFor="startDate">Starting Date</label>
+          <label htmlFor="startDate">Fecha de Inicio</label>
           <input
             type="date"
             id="startDate"
             value={form.startDate}
             onChange={onChange}
-            required
           />
         </div>
 
         <div className="form-field">
-          <label htmlFor="endDate">End Date</label>
+          <label htmlFor="endDate">Fecha de Finalización</label>
           <input
             type="date"
             id="endDate"
             value={form.endDate}
             onChange={onChange}
-            required
           />
         </div>
 
         <div className="form-field">
-          <label htmlFor="numberOfPayments">Number of Payments</label>
+          <label htmlFor="numberOfPayments">Número de Semanas</label>
           <input
             type="number"
             id="numberOfPayments"
             value={paymentCount || ""}
-            readOnly
-            placeholder="Choose dates"
+            onChange={onChange}
+            min="1"
+            step="1"
+            placeholder="e.g. 10 or 13 weeks"
+            required
           />
         </div>
       </div>
       <div className="form-footer">
         <button className="submit-button" type="submit">
-          Add Client
+          Agregar Cliente
         </button>
       </div>
     </form>

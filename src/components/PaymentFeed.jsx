@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 
 const formatCurrency = (amount) =>
@@ -6,8 +7,9 @@ const formatCurrency = (amount) =>
     currency: "USD",
   });
 
-const PaymentFeed = ({ payments = [] }) => {
+const PaymentFeed = ({ payments = [], clientName }) => {
   const orderedPayments = [...payments].reverse();
+  const [receiptPaymentId, setReceiptPaymentId] = useState(null);
 
   return (
     <section className="payment-feed" aria-labelledby="payment-history-title">
@@ -28,7 +30,33 @@ const PaymentFeed = ({ payments = [] }) => {
               transition={{ delay: index * 0.04, duration: 0.25 }}
             >
               <span>{new Date(payment.date).toLocaleDateString()}</span>
-              <strong>{formatCurrency(payment.amount)}</strong>
+              <div className="payment-item-actions">
+                <strong>{formatCurrency(payment.amount)}</strong>
+                <button
+                  type="button"
+                  className="receipt-toggle payment-receipt-toggle"
+                  onClick={() =>
+                    setReceiptPaymentId((current) =>
+                      current === payment.id ? null : payment.id,
+                    )
+                  }
+                >
+                  {receiptPaymentId === payment.id ? "Hide receipt" : "Receipt"}
+                </button>
+              </div>
+              {receiptPaymentId === payment.id && (
+                <div
+                  className="payment-receipt"
+                  role="dialog"
+                  aria-label="Payment receipt"
+                >
+                  <p className="receipt-kicker">Payment receipt</p>
+                  <h4>{clientName}</h4>
+                  <p>{new Date(payment.date).toLocaleDateString()}</p>
+                  <strong>{formatCurrency(payment.amount)}</strong>
+                  <span>Payment received</span>
+                </div>
+              )}
             </motion.li>
           ))}
         </ul>

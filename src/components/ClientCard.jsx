@@ -2,19 +2,49 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import PaymentFeed from "./PaymentFeed";
 
-const ClientCard = ({ client, onApplyPayment }) => {
+const ClientCard = ({ client, onApplyPayment, onLiquidate }) => {
   const [paymentInput, setPaymentInput] = useState("");
+  const [paymentError, setPaymentError] = useState("");
   const [showDetails, setShowDetails] = useState(false);
   if (!client) return null;
+
+  const getUpcomingDueDate = (startDate) => {
+    if (!startDate) return null;
+
+    const [year, month, day] = startDate.split("-").map(Number);
+    const loanDate = new Date(year, month - 1, day);
+    if (!Number.isFinite(loanDate.getTime())) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    loanDate.setHours(0, 0, 0, 0);
+
+    if (loanDate > today) return loanDate;
+
+    const daysUntilDue = (loanDate.getDay() - today.getDay() + 7) % 7;
+    const upcomingDueDate = new Date(today);
+    upcomingDueDate.setDate(today.getDate() + daysUntilDue);
+    return upcomingDueDate;
+  };
 
   const loanAmount = Number(client.loanAmount || 0);
   const payment = client.calculatedLoan?.payment || 0;
   const numberOfPayments = client.calculatedLoan?.numberOfPayments || 0;
-  const totalPaid = client.calculatedLoan?.totalPaid || 0;
   const totalInterest = client.calculatedLoan?.totalInterest || 0;
+  const paidSoFar = (client.payments || []).reduce(
+    (total, item) => total + (Number(item.amount) || 0),
+    0,
+  );
+  const remainingBalance = Math.max(
+    0,
+    (client.calculatedLoan?.totalAmount || 0) - paidSoFar,
+  );
+  const remainingCents = Math.round(remainingBalance * 100);
+  const canLiquidate = client.status !== "liquidated" && remainingCents === 0;
   const endDate = client.endDate
     ? new Date(client.endDate).toLocaleDateString()
     : "N/A";
+  const upcomingDueDate = getUpcomingDueDate(client.startDate);
   return (
     <motion.article
       className="client-card"
@@ -26,20 +56,24 @@ const ClientCard = ({ client, onApplyPayment }) => {
     >
       <div className="card-header">
         <div>
-          <p className="card-label">Client Profile</p>
-          <h3>Loan Summary</h3>
+          <p className="card-label">Perfil del Cliente</p>
+          <h3>Resumen del Préstamo</h3>
         </div>
-        <span className="status-pill">Active</span>
+        <span
+          className={`status-pill ${client.status === "liquidated" ? "status-pill-complete" : ""}`}
+        >
+          {client.status === "liquidated" ? "Liquidated" : "Active"}
+        </span>
       </div>
 
       <div>
-        <span className="card-label">Client Name</span>
+        <span className="card-label">Nombre del Cliente</span>
         <h2>{client.name}</h2>
       </div>
 
       <div className="card-body">
         <div className="card-row">
-          <span>Loan Amount</span>
+          <span>Monto del Préstamo</span>
           <strong>
             {loanAmount.toLocaleString("en-US", {
               style: "currency",
@@ -49,20 +83,29 @@ const ClientCard = ({ client, onApplyPayment }) => {
         </div>
 
         <div className="card-row">
-          <span>Interest Rate</span>
+          <span>Tasa de Interés</span>
           <strong>{client.interestRate}%</strong>
         </div>
 
         <div className="card-row">
-          <span>Payment Frequency</span>
+          <span>Frecuencia de Pagos</span>
           <strong>{client.paymentFrequency}</strong>
         </div>
-        <div className="card-row">
-          <span>Compounding</span>
-          <strong>{client.compoundingFrequency}</strong>
+        <div className="card-row upcoming-due-row">
+          <span>Próximo Vencimiento</span>
+          <strong>
+            {upcomingDueDate
+              ? upcomingDueDate.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "N/A"}
+          </strong>
         </div>
         <div className="card-row">
-          <span>Payment (per installment)</span>
+          <span>Pago (por cuota)</span>
           <strong>
             {payment.toLocaleString("en-US", {
               style: "currency",
@@ -72,7 +115,7 @@ const ClientCard = ({ client, onApplyPayment }) => {
         </div>
 
         <div className="card-row">
-          <span>Number of Payments</span>
+          <span>Plazo del Préstamo (semanas)</span>
           <strong>{numberOfPayments}</strong>
         </div>
 
@@ -81,7 +124,7 @@ const ClientCard = ({ client, onApplyPayment }) => {
           className="details-button"
           onClick={() => setShowDetails((prev) => !prev)}
         >
-          {showDetails ? "Hide Details ↑" : "View Details ↓"}
+          {showDetails ? "Ocultar Detalles ↑" : "Ver Detalles ↓"}
         </button>
 
         <AnimatePresence>
@@ -95,9 +138,9 @@ const ClientCard = ({ client, onApplyPayment }) => {
               <div className="detail-divider" />
 
               <div className="card-row">
-                <span>Total Paid</span>
+                <span>Total Pagado</span>
                 <strong>
-                  {totalPaid.toLocaleString("en-US", {
+                  {paidSoFar.toLocaleString("en-US", {
                     style: "currency",
                     currency: "USD",
                   })}
@@ -105,7 +148,7 @@ const ClientCard = ({ client, onApplyPayment }) => {
               </div>
 
               <div className="card-row">
-                <span>Total Interest</span>
+                <span>Interes Total</span>
                 <strong>
                   {totalInterest.toLocaleString("en-US", {
                     style: "currency",
@@ -115,34 +158,101 @@ const ClientCard = ({ client, onApplyPayment }) => {
               </div>
 
               <div className="card-row">
-                <span>End Date</span>
+                <span>Saldo Restante</span>
+                <strong>
+                  {remainingBalance.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  })}
+                </strong>
+              </div>
+
+              <div className="card-row">
+                <span>Fecha de Vencimiento</span>
                 <strong>{endDate}</strong>
               </div>
               <div className="card-row payment-entry">
-                <label>Apply Payment</label>
+                <label>Procesar Pago</label>
                 <div className="payment-controls">
                   <input
                     type="number"
                     value={paymentInput}
-                    onChange={(e) => setPaymentInput(e.target.value)}
+                    min="0.01"
+                    max={remainingBalance}
+                    step="0.01"
+                    onChange={(e) => {
+                      setPaymentInput(e.target.value);
+                      setPaymentError("");
+                    }}
                     placeholder="Amount"
+                    disabled={
+                      client.status === "liquidated" || remainingCents === 0
+                    }
                   />
                   <button
-                    className="apply-payment-button"
+                    className="details-button"
+                    type="button"
+                    disabled={
+                      client.status === "liquidated" || remainingCents === 0
+                    }
                     onClick={() => {
-                      if (!paymentInput) return;
-                      if (typeof onApplyPayment === "function") {
-                        onApplyPayment(client.id, paymentInput);
+                      const paymentAmount = Number(paymentInput);
+                      if (
+                        !paymentInput ||
+                        !Number.isFinite(paymentAmount) ||
+                        paymentAmount <= 0
+                      ) {
+                        setPaymentError("Enter a payment amount.");
+                        return;
                       }
-                      setPaymentInput("");
+                      if (Math.round(paymentAmount * 100) > remainingCents) {
+                        setPaymentError(
+                          "Payment cannot exceed the remaining balance.",
+                        );
+                        return;
+                      }
+                      if (
+                        typeof onApplyPayment === "function" &&
+                        onApplyPayment(client.id, paymentInput)
+                      ) {
+                        setPaymentError("");
+                        setPaymentInput("");
+                      }
                     }}
                   >
-                    Apply
+                    Cobrar 💰
                   </button>
                 </div>
+                {paymentError && (
+                  <p className="payment-error">{paymentError}</p>
+                )}
               </div>
 
-              <PaymentFeed payments={client.payments} />
+              <PaymentFeed
+                payments={client.payments}
+                clientName={client.name}
+              />
+
+              <button
+                type="button"
+                className="liquidate-button"
+                disabled={!canLiquidate}
+                onClick={() => {
+                  if (!canLiquidate) return;
+                  const confirmed = window.confirm(
+                    `Liquidate ${client.name}'s loan? The fully paid client will be removed from the active list.`,
+                  );
+                  if (confirmed && typeof onLiquidate === "function") {
+                    onLiquidate(client.id);
+                  }
+                }}
+              >
+                {client.status === "liquidated"
+                  ? "Loan liquidated"
+                  : canLiquidate
+                    ? "Liquidate client"
+                    : "Pay balance to liquidate"}
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

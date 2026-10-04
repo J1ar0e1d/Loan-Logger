@@ -392,6 +392,11 @@ body {
   font-weight: 800;
 }
 
+.status-pill-complete {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
 /* =========================
    CARD DATA
 ========================= */
@@ -426,6 +431,28 @@ body {
 
   font-size: 20px;
   font-weight: 700;
+}
+
+.card-row-endDate {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 15px;
+  font-size: 1.3rem;
+}
+
+.upcoming-due-row {
+  margin: 2px -8px;
+  padding: 10px 8px;
+  border-radius: 8px;
+  background: #e8f7f5;
+}
+
+.upcoming-due-row span,
+.upcoming-due-row strong {
+  color: #126b69;
 }
 
 /* =========================
@@ -530,6 +557,7 @@ body {
 
 .payment-item {
   display: flex;
+  flex-wrap: wrap;
 
   justify-content: space-between;
 
@@ -561,6 +589,115 @@ body {
 
 .payment-item strong {
   color: #208282;
+}
+
+.payment-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-receipt-toggle {
+  width: auto;
+  margin-top: 0;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+
+.receipt-toggle {
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1px solid #9fc5c7;
+  border-radius: 9px;
+  background: #eefafa;
+  color: #205f64;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.receipt-actions {
+  margin-top: 12px;
+}
+
+.payment-receipt {
+  flex-basis: 100%;
+  margin-top: 10px;
+  padding: 20px;
+  border: 1px dashed #7eaeb1;
+  border-radius: 12px;
+  background: #fbffff;
+  text-align: center;
+}
+
+.payment-receipt p,
+.payment-receipt h4 {
+  margin: 0;
+}
+
+.payment-receipt h4 {
+  color: #172532;
+  font-size: 1.2rem;
+}
+
+.payment-receipt p:not(.receipt-kicker) {
+  margin-top: 4px;
+  color: #71808a;
+  font-size: 0.85rem;
+}
+
+.receipt-kicker {
+  margin-bottom: 8px !important;
+  color: #258d8d;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.payment-receipt strong {
+  display: block;
+  margin-top: 16px;
+  color: #172532;
+  font-size: 1.8rem;
+}
+
+.payment-receipt span {
+  display: block;
+  margin-top: 4px;
+  color: #207044;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.liquidate-button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid #d7a4a4;
+  border-radius: 9px;
+  background: #fff4f4;
+  color: #8c3838;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.liquidate-button:hover:not(:disabled) {
+  background: #ffe6e6;
+}
+
+.liquidate-button:disabled {
+  border-color: #d6dce1;
+  background: #f1f3f5;
+  color: #7d8790;
+  cursor: not-allowed;
+}
+
+.payment-error {
+  margin: 8px 0 0;
+  color: #b42318;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 /* =========================
